@@ -1,5 +1,4 @@
 import json
-import os
 import pytest
 import yaml
 
@@ -18,7 +17,7 @@ SAMPLE_WORKFLOW = {
         "pdf_type": "image_layer",
         "pdf_renderer": {
             "tool": "pdftoppm",
-            "path": "/usr/bin/pdftoppm",
+            "path": "pdftoppm",
             "dpi": 150,
             "max_pages": 20,
         },
@@ -44,6 +43,13 @@ SAMPLE_WORKFLOW = {
         "pages": "workspace/pages/",
         "scripts": "scripts/",
     },
+}
+
+SAMPLE_METADATA = {
+    "students": [
+        {"submission_id": "111", "student_name": "Alice Smith", "pdf": "111.pdf"},
+        {"submission_id": "222", "student_name": "Bob Jones", "pdf": "222.pdf"},
+    ]
 }
 
 SAMPLE_STUDENTS = [
@@ -79,6 +85,11 @@ def project_dir(tmp_path):
         "scripts",
     ]:
         (tmp_path / path).mkdir(parents=True, exist_ok=True)
+
+    (tmp_path / "submissions" / "metadata.yml").write_text(yaml.dump(SAMPLE_METADATA))
+
+    for fname in ("rubric.md", "answer_key.md", "comments.md", "decisions.md"):
+        (tmp_path / fname).write_text("")
 
     for student in SAMPLE_STUDENTS:
         fname = f"{student['submission_id']}_grades.json"
