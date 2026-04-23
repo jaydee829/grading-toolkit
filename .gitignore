@@ -1,0 +1,7 @@
+node_modules/
+*.pyc
+__pycache__/
+.pytest_cache/
+*.pdf
+Thumbs.db
+.DS_Store

@@ -1,1 +1,7 @@
-{"name": "grading-toolkit", "version": "1.0.0"}
+{
+  "name": "grading-toolkit",
+  "version": "1.0.0",
+  "description": "AI-assisted grading workflow skills for academic instructors",
+  "license": "MIT",
+  "private": true
+}
