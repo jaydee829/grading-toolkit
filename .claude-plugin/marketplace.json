@@ -1,0 +1,27 @@
+{
+  "name": "grading-toolkit",
+  "owner": {
+    "name": "Instructor Name",
+    "email": "instructor@example.com"
+  },
+  "metadata": {
+    "description": "AI-assisted grading workflow skills for academic instructors",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "grading-toolkit",
+      "description": "Initialize workspace, build rubrics, transcribe PDFs, grade by question, and export results",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/grade-init",
+        "./skills/grade-profile",
+        "./skills/grade-rubric",
+        "./skills/grade-transcribe",
+        "./skills/grade-question",
+        "./skills/grade-export"
+      ]
+    }
+  ]
+}
