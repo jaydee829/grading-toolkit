@@ -1,5 +1,6 @@
 import os
 import sys
+import shutil
 import yaml
 import pdfplumber
 
@@ -17,6 +18,7 @@ def extract_all(project_root="."):
 
     pdfs = sorted(f for f in os.listdir(subs_dir) if f.endswith(".pdf"))
     ok, skipped = 0, 0
+    errors = []
 
     for pdf_fname in pdfs:
         sub_id = os.path.splitext(pdf_fname)[0]
@@ -29,19 +31,22 @@ def extract_all(project_root="."):
         pdf_path = os.path.join(subs_dir, pdf_fname)
         parts = []
 
-        with pdfplumber.open(pdf_path) as pdf:
-            for i, page in enumerate(pdf.pages, 1):
-                text = page.extract_text() or ""
-                parts.append(f"## Page {i}\n\n{text}\n")
-
-        with open(out_path, "w", encoding="utf-8") as f:
-            f.write("\n".join(parts))
-
-        ok += 1
-        print(f"[OK] {sub_id}")
+        try:
+            with pdfplumber.open(pdf_path) as pdf:
+                for i, page in enumerate(pdf.pages, 1):
+                    text = page.extract_text() or ""
+                    parts.append(f"## Page {i}\n\n{text}\n")
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write("\n".join(parts))
+            ok += 1
+            print(f"[OK] {sub_id}")
+        except Exception as exc:
+            shutil.rmtree(out_path, ignore_errors=True)  # clean up partial file
+            errors.append({"sub_id": sub_id, "error": str(exc)})
+            print(f"[ERROR] {sub_id}: {exc}")
 
     print(f"\nExtracted: {ok} | Skipped: {skipped}")
-    return ok, skipped
+    return ok, skipped, errors
 
 
 if __name__ == "__main__":
