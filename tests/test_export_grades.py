@@ -1,7 +1,6 @@
 import csv
 import json
 import os
-import sys
 import yaml
 import pytest
 
@@ -27,7 +26,7 @@ def test_csv_export_has_correct_columns(project_dir, tmp_path):
 
     csv_path = str(tmp_path / "grades.csv")
     questions = ["Q1a", "Q1b"]
-    students = load_all_grades(str(project_dir / "workspace/grades"), questions)
+    students, _ = load_all_grades(str(project_dir / "workspace/grades"), questions)
     export_csv(students, questions, csv_path)
 
     with open(csv_path) as f:
@@ -44,7 +43,7 @@ def test_json_export_is_question_indexed(project_dir, tmp_path):
     _write_graded(project_dir, "111", "Alice Smith", "Correct", None)
 
     questions = ["Q1a", "Q1b"]
-    students = load_all_grades(str(project_dir / "workspace/grades"), questions)
+    students, _ = load_all_grades(str(project_dir / "workspace/grades"), questions)
     json_dir = str(tmp_path)
     export_json(students, questions, json_dir)
 
@@ -59,7 +58,6 @@ def test_json_export_is_question_indexed(project_dir, tmp_path):
 
 def test_warns_on_incomplete_grades(project_dir, tmp_path, capsys):
     # Both students have null grades (from conftest fixture)
-    import yaml
     config = yaml.safe_load((project_dir / "workflow.yml").read_text())
     config["output"]["format"] = "csv"
     config["output"]["csv_path"] = str(tmp_path / "grades.csv")
@@ -69,3 +67,16 @@ def test_warns_on_incomplete_grades(project_dir, tmp_path, capsys):
 
     captured = capsys.readouterr()
     assert "WARNING" in captured.out
+
+
+def test_skips_corrupt_json_in_load_all_grades(project_dir):
+    corrupt = project_dir / "workspace/grades/111_grades.json"
+    corrupt.write_text("{not valid json")
+
+    questions = ["Q1a", "Q1b"]
+    students, corrupt_files = load_all_grades(str(project_dir / "workspace/grades"), questions)
+
+    assert len(students) == 1
+    assert students[0]["submission_id"] == "222"
+    assert len(corrupt_files) == 1
+    assert "111_grades.json" in corrupt_files[0]["file"]

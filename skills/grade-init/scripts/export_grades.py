@@ -12,12 +12,17 @@ def load_workflow(project_root="."):
 
 def load_all_grades(grades_dir, questions):
     students = []
+    corrupt_files = []
     for fname in sorted(os.listdir(grades_dir)):
         if not fname.endswith("_grades.json"):
             continue
-        with open(os.path.join(grades_dir, fname)) as f:
-            students.append(json.load(f))
-    return students
+        try:
+            with open(os.path.join(grades_dir, fname)) as f:
+                students.append(json.load(f))
+        except (json.JSONDecodeError, KeyError, OSError) as exc:
+            corrupt_files.append({"file": fname, "error": str(exc)})
+            print(f"[WARN] Skipping {fname}: {exc}")
+    return students, corrupt_files
 
 
 def export_csv(students, questions, csv_path):
@@ -25,6 +30,7 @@ def export_csv(students, questions, csv_path):
     for q in questions:
         fieldnames += [f"{q}_grade", f"{q}_comment"]
 
+    os.makedirs(os.path.dirname(csv_path) or ".", exist_ok=True)
     with open(csv_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
@@ -57,7 +63,7 @@ def export(project_root="."):
     config = load_workflow(project_root)
     questions = [q["id"] for q in config["questions"]]
     grades_dir = os.path.join(project_root, config["paths"]["grades"])
-    students = load_all_grades(grades_dir, questions)
+    students, corrupt_files = load_all_grades(grades_dir, questions)
 
     incomplete = sum(
         1 for s in students if any(s["grades"].get(q) is None for q in questions)
