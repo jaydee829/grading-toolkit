@@ -21,18 +21,24 @@ def get_progress(project_root="."):
     )
 
     graded = {q: 0 for q in questions}
+    corrupt_files = []
     for fname in grade_files:
-        with open(os.path.join(grades_dir, fname)) as f:
-            data = json.load(f)
-        for q in questions:
-            if data["grades"].get(q) is not None:
-                graded[q] += 1
+        try:
+            with open(os.path.join(grades_dir, fname)) as f:
+                data = json.load(f)
+            for q in questions:
+                if data.get("grades", {}).get(q) is not None:
+                    graded[q] += 1
+        except (json.JSONDecodeError, KeyError, OSError) as exc:
+            corrupt_files.append({"file": fname, "error": str(exc)})
+            print(f"[WARN] Skipping {fname}: {exc}")
 
     return {
         "total_students": len(grade_files),
         "transcribed": len(transcribed),
         "questions": questions,
         "graded": graded,
+        "corrupt_files": corrupt_files,
     }
 
 
