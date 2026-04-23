@@ -1,6 +1,10 @@
 import json
+import os
+import sys
 import pytest
 import yaml
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "skills", "grade-init", "scripts"))
 
 
 SAMPLE_WORKFLOW = {
