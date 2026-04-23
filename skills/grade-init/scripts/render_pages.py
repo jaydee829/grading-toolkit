@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 import sys
 import yaml
@@ -23,7 +24,7 @@ def render_all(project_root="."):
     ok, skipped, errors = 0, 0, []
 
     for pdf_fname in pdfs:
-        sub_id = pdf_fname[:-4]
+        sub_id = os.path.splitext(pdf_fname)[0]
         out_dir = os.path.join(pages_dir, sub_id)
 
         if os.path.isdir(out_dir) and any(f.endswith(".png") for f in os.listdir(out_dir)):
@@ -35,9 +36,15 @@ def render_all(project_root="."):
         pdf_path = os.path.join(subs_dir, pdf_fname)
 
         cmd = [pdftoppm, "-r", dpi, "-f", "1", "-l", max_pages, "-png", pdf_path, out_prefix]
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True)
+        except OSError as exc:
+            shutil.rmtree(out_dir, ignore_errors=True)
+            errors.append({"sub_id": sub_id, "stderr": str(exc)})
+            continue
 
         if result.returncode != 0:
+            shutil.rmtree(out_dir, ignore_errors=True)
             errors.append({"sub_id": sub_id, "stderr": result.stderr.strip()})
         else:
             ok += 1

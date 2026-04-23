@@ -20,6 +20,7 @@ def test_renders_pdf_and_creates_output_dir(project_dir):
     assert ok == 1
     assert skipped == 0
     assert errors == []
+    assert (project_dir / "workspace" / "pages" / "111").is_dir()
     # pdftoppm was called with correct args
     args = mock_run.call_args[0][0]
     assert "-r" in args
@@ -54,3 +55,16 @@ def test_records_error_on_nonzero_returncode(project_dir):
     assert ok == 0
     assert len(errors) == 1
     assert errors[0]["sub_id"] == "111"
+    assert "pdftoppm: command not found" in errors[0]["stderr"]
+
+
+def test_records_error_when_binary_not_found(project_dir):
+    (project_dir / "submissions" / "111.pdf").write_bytes(b"%PDF-1.4")
+
+    with patch("render_pages.subprocess.run", side_effect=OSError("No such file or directory: 'pdftoppm'")):
+        ok, skipped, errors = render_all(str(project_dir))
+
+    assert ok == 0
+    assert len(errors) == 1
+    assert errors[0]["sub_id"] == "111"
+    assert "pdftoppm" in errors[0]["stderr"]
