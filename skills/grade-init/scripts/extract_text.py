@@ -1,6 +1,5 @@
 import os
 import sys
-import shutil
 import yaml
 import pdfplumber
 
@@ -41,7 +40,10 @@ def extract_all(project_root="."):
             ok += 1
             print(f"[OK] {sub_id}")
         except Exception as exc:
-            shutil.rmtree(out_path, ignore_errors=True)  # clean up partial file
+            try:
+                os.remove(out_path)
+            except OSError:
+                pass
             errors.append({"sub_id": sub_id, "error": str(exc)})
             print(f"[ERROR] {sub_id}: {exc}")
 
@@ -51,4 +53,8 @@ def extract_all(project_root="."):
 
 if __name__ == "__main__":
     project_root = sys.argv[1] if len(sys.argv) > 1 else "."
-    extract_all(project_root)
+    try:
+        extract_all(project_root)
+    except FileNotFoundError as exc:
+        print(f"Error: {exc}. Make sure workflow.yml exists and run /grade-init first.", file=sys.stderr)
+        sys.exit(1)

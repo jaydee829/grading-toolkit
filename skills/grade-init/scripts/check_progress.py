@@ -54,4 +54,8 @@ def print_progress(project_root="."):
 
 if __name__ == "__main__":
     project_root = sys.argv[1] if len(sys.argv) > 1 else "."
-    print_progress(project_root)
+    try:
+        print_progress(project_root)
+    except FileNotFoundError as exc:
+        print(f"Error: {exc}. Make sure workflow.yml exists and run /grade-init first.", file=sys.stderr)
+        sys.exit(1)

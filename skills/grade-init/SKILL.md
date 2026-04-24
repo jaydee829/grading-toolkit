@@ -36,12 +36,11 @@ Ask the following questions, presenting detected values as defaults:
 8. **Student roster** — path to existing `metadata.yml`, or create blank template:
    ```yaml
    # submissions/metadata.yml
-   # One entry per student PDF:
-   # <SID>.pdf:
-   #   submitters:
-   #     - name: Student Name
-   #       sid: "student_id"
-   #   score: 0.0
+   # One entry per student:
+   students:
+     - submission_id: "student_id"
+       student_name: "Student Name"
+       pdf: "<SID>.pdf"
    ```
 9. **Output format** — csv, json, or both; ask for any CSV column preferences
 
