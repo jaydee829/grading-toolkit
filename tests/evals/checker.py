@@ -31,6 +31,6 @@ def _parse_comments_md(comments_md_path: str) -> dict:
             current_cat = line[4:].strip()
             result[current_q][current_cat] = []
         elif line.startswith('- "') and current_q and current_cat:
-            comment = line[3:].rstrip('"')
+            comment = line[3:-1]
             result[current_q][current_cat].append(comment)
     return result

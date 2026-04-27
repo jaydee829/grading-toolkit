@@ -41,6 +41,8 @@ def result_dir(tmp_path, scenario):
     prepopulate = scenario.get("prepopulate", {})
 
     for sid in scenario["students"]:
+        if sid not in _PASSING_GRADES:
+            raise ValueError(f"No passing grade defined for SID {sid!r} in _PASSING_GRADES")
         grade, comment, explanation = _PASSING_GRADES[sid]
         data = {
             "submission_id": sid,
