@@ -61,3 +61,19 @@ def check_grade_schema_valid(result_dir: str, scenario: dict) -> tuple:
     if invalid:
         return False, f"Missing required keys in: {invalid}"
     return True, f"all {len(scenario['students'])} valid"
+
+
+def check_no_null_grades(result_dir: str, scenario: dict) -> tuple:
+    grades_dir = os.path.join(result_dir, "workspace", "grades")
+    qid = scenario["question_id"]
+    nulls = []
+    for sid in scenario["students"]:
+        path = os.path.join(grades_dir, f"{sid}_grades.json")
+        with open(path) as f:
+            data = json.load(f)
+        for field in ("grades", "comments", "explanations"):
+            if data[field].get(qid) is None:
+                nulls.append(f"{sid}.{field}")
+    if nulls:
+        return False, f"Null values: {nulls}"
+    return True, "all populated"

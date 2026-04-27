@@ -76,3 +76,32 @@ def test_grade_schema_valid_fails_when_key_missing(result_dir, scenario):
     passed, detail = check_grade_schema_valid(str(result_dir), scenario)
     assert not passed
     assert "222222" in detail
+
+
+from checker import check_no_null_grades
+
+
+def test_no_null_grades_passes(result_dir, scenario):
+    passed, detail = check_no_null_grades(str(result_dir), scenario)
+    assert passed
+    assert "all populated" in detail
+
+
+def test_no_null_grades_fails_when_grade_is_null(result_dir, scenario):
+    path = result_dir / "workspace" / "grades" / "333333_grades.json"
+    data = json.loads(path.read_text())
+    data["grades"]["Q1"] = None
+    path.write_text(json.dumps(data))
+    passed, detail = check_no_null_grades(str(result_dir), scenario)
+    assert not passed
+    assert "333333" in detail
+
+
+def test_no_null_grades_fails_when_comment_is_null(result_dir, scenario):
+    path = result_dir / "workspace" / "grades" / "444444_grades.json"
+    data = json.loads(path.read_text())
+    data["comments"]["Q1"] = None
+    path.write_text(json.dumps(data))
+    passed, detail = check_no_null_grades(str(result_dir), scenario)
+    assert not passed
+    assert "444444" in detail
