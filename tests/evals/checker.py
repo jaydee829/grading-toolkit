@@ -271,3 +271,29 @@ def check_comment_reuse_verbatim(result_dir: str, scenario: dict) -> tuple:
     if failing:
         return False, f"Verbatim reuse failed: {failing}"
     return True, f"exact match for {list(reuse_cases.keys())}"
+
+
+ASSERTIONS = [
+    check_grade_files_exist,
+    check_no_null_grades,
+    check_iterative_writes,
+    check_valid_rubric_categories,
+    check_correct_response_empty_comment,
+    check_comment_single_sentence,
+    check_comment_ends_with_question,
+    check_comment_reuse_verbatim,
+    check_grade_schema_valid,
+    check_decisions_updated,
+    check_decisions_entry_format,
+    check_new_comment_in_comments_md,
+    check_merge_preserves_other_questions,
+]
+
+
+def run_all_assertions(result_dir: str, scenario: dict) -> dict:
+    results = {}
+    for fn in ASSERTIONS:
+        name = fn.__name__.replace("check_", "")
+        passed, detail = fn(result_dir, scenario)
+        results[name] = {"pass": passed, "detail": detail}
+    return results

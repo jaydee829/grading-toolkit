@@ -299,3 +299,29 @@ def test_merge_preserves_other_questions_fails_when_q2_overwritten(result_dir, s
     passed, detail = check_merge_preserves_other_questions(str(result_dir), scenario)
     assert not passed
     assert "111111" in detail
+
+
+from checker import run_all_assertions, ASSERTIONS
+
+
+def test_run_all_assertions_returns_all_keys(result_dir, scenario):
+    grades_dir = result_dir / "workspace" / "grades"
+    base = time.time()
+    for i, sid in enumerate(scenario["students"]):
+        os.utime(grades_dir / f"{sid}_grades.json", (base + i * 10, base + i * 10))
+
+    results = run_all_assertions(str(result_dir), scenario)
+    expected_keys = {fn.__name__.replace("check_", "") for fn in ASSERTIONS}
+    assert set(results.keys()) == expected_keys
+
+
+def test_run_all_assertions_result_has_pass_and_detail(result_dir, scenario):
+    grades_dir = result_dir / "workspace" / "grades"
+    base = time.time()
+    for i, sid in enumerate(scenario["students"]):
+        os.utime(grades_dir / f"{sid}_grades.json", (base + i * 10, base + i * 10))
+
+    results = run_all_assertions(str(result_dir), scenario)
+    for name, result in results.items():
+        assert "pass" in result, f"missing 'pass' in {name}"
+        assert "detail" in result, f"missing 'detail' in {name}"
