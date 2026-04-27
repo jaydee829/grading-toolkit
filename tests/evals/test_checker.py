@@ -236,3 +236,34 @@ def test_comment_reuse_verbatim_fails_when_empty(result_dir, scenario):
     passed, detail = check_comment_reuse_verbatim(str(result_dir), scenario)
     assert not passed
     assert "444444" in detail
+
+
+from checker import check_decisions_updated, check_decisions_entry_format
+
+
+def test_decisions_updated_passes(result_dir, scenario):
+    passed, detail = check_decisions_updated(str(result_dir), scenario)
+    assert passed
+    assert "new entry" in detail
+
+
+def test_decisions_updated_fails_when_unchanged(result_dir, scenario):
+    import shutil
+    fixture_dir = scenario["_fixture_dir"]
+    shutil.copy(os.path.join(fixture_dir, "decisions.md"), result_dir / "decisions.md")
+    passed, detail = check_decisions_updated(str(result_dir), scenario)
+    assert not passed
+
+
+def test_decisions_entry_format_passes(result_dir, scenario):
+    passed, detail = check_decisions_entry_format(str(result_dir), scenario)
+    assert passed
+    assert "required fields present" in detail
+
+
+def test_decisions_entry_format_fails_when_missing_ruling(result_dir, scenario):
+    with open(result_dir / "decisions.md", "w") as f:
+        f.write("## Q1 — 2026-04-23\n**Case:** some case\n**Applied to:** someone\n")
+    passed, detail = check_decisions_entry_format(str(result_dir), scenario)
+    assert not passed
+    assert "**Ruling:**" in detail

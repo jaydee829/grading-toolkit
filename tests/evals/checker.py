@@ -164,6 +164,38 @@ def check_comment_ends_with_question(result_dir: str, scenario: dict) -> tuple:
     return True, "all non-empty comments end with ?"
 
 
+def check_decisions_updated(result_dir: str, scenario: dict) -> tuple:
+    fixture_dir = scenario["_fixture_dir"]
+    qid = scenario["question_id"]
+    with open(os.path.join(fixture_dir, "decisions.md")) as f:
+        baseline = f.read()
+    with open(os.path.join(result_dir, "decisions.md")) as f:
+        current = f.read()
+    baseline_count = baseline.count(f"## {qid} —")
+    current_count = current.count(f"## {qid} —")
+    new_entries = current_count - baseline_count
+    if new_entries < 1:
+        return False, "no new entries"
+    return True, f"{new_entries} new entry/entries"
+
+
+def check_decisions_entry_format(result_dir: str, scenario: dict) -> tuple:
+    fixture_dir = scenario["_fixture_dir"]
+    qid = scenario["question_id"]
+    with open(os.path.join(fixture_dir, "decisions.md")) as f:
+        baseline = f.read()
+    with open(os.path.join(result_dir, "decisions.md")) as f:
+        current = f.read()
+    new_content = current[len(baseline):]
+    if not new_content.strip():
+        return False, "no new entries to check"
+    required = ["**Case:**", "**Ruling:**", "**Applied to:**", f"## {qid} —"]
+    missing = [field for field in required if field not in new_content]
+    if missing:
+        return False, f"missing required fields: {missing}"
+    return True, "required fields present"
+
+
 def check_comment_reuse_verbatim(result_dir: str, scenario: dict) -> tuple:
     fixture_dir = scenario["_fixture_dir"]
     comments_map = _parse_comments_md(os.path.join(fixture_dir, "comments.md"))
