@@ -267,3 +267,35 @@ def test_decisions_entry_format_fails_when_missing_ruling(result_dir, scenario):
     passed, detail = check_decisions_entry_format(str(result_dir), scenario)
     assert not passed
     assert "**Ruling:**" in detail
+
+
+from checker import check_new_comment_in_comments_md, check_merge_preserves_other_questions
+
+
+def test_new_comment_in_comments_md_passes(result_dir, scenario):
+    passed, detail = check_new_comment_in_comments_md(str(result_dir), scenario)
+    assert passed
+
+
+def test_new_comment_in_comments_md_fails_when_unchanged(result_dir, scenario):
+    import shutil
+    fixture_dir = scenario["_fixture_dir"]
+    shutil.copy(os.path.join(fixture_dir, "comments.md"), result_dir / "comments.md")
+    passed, detail = check_new_comment_in_comments_md(str(result_dir), scenario)
+    assert not passed
+
+
+def test_merge_preserves_other_questions_passes(result_dir, scenario):
+    passed, detail = check_merge_preserves_other_questions(str(result_dir), scenario)
+    assert passed
+    assert "Q2" in detail
+
+
+def test_merge_preserves_other_questions_fails_when_q2_overwritten(result_dir, scenario):
+    path = result_dir / "workspace" / "grades" / "111111_grades.json"
+    data = json.loads(path.read_text())
+    data["grades"]["Q2"] = None
+    path.write_text(json.dumps(data))
+    passed, detail = check_merge_preserves_other_questions(str(result_dir), scenario)
+    assert not passed
+    assert "111111" in detail

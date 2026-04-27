@@ -164,6 +164,59 @@ def check_comment_ends_with_question(result_dir: str, scenario: dict) -> tuple:
     return True, "all non-empty comments end with ?"
 
 
+def _extract_q_section(text: str, qid: str) -> str:
+    lines = text.splitlines()
+    in_section = False
+    section_lines = []
+    for line in lines:
+        if line.strip() == f"## {qid}":
+            in_section = True
+            continue
+        if line.startswith("## ") and in_section:
+            break
+        if in_section:
+            section_lines.append(line)
+    return "\n".join(section_lines)
+
+
+def check_new_comment_in_comments_md(result_dir: str, scenario: dict) -> tuple:
+    fixture_dir = scenario["_fixture_dir"]
+    qid = scenario["question_id"]
+    with open(os.path.join(fixture_dir, "comments.md")) as f:
+        baseline = f.read()
+    with open(os.path.join(result_dir, "comments.md")) as f:
+        current = f.read()
+    baseline_section = _extract_q_section(baseline, qid)
+    current_section = _extract_q_section(current, qid)
+    if len(current_section.strip()) <= len(baseline_section.strip()):
+        return False, f"{qid} section unchanged"
+    return True, f"{qid} section updated"
+
+
+def check_merge_preserves_other_questions(result_dir: str, scenario: dict) -> tuple:
+    grades_dir = os.path.join(result_dir, "workspace", "grades")
+    prepopulate = scenario.get("prepopulate", {})
+    if not prepopulate:
+        return True, "no other questions to check"
+    failing = []
+    for sid in scenario["students"]:
+        path = os.path.join(grades_dir, f"{sid}_grades.json")
+        with open(path) as f:
+            data = json.load(f)
+        for other_qid, expected in prepopulate.items():
+            for field in ("grades", "comments", "explanations"):
+                actual = data[field].get(other_qid)
+                exp_val = expected.get(field)
+                if actual != exp_val:
+                    failing.append(
+                        f"{sid}.{field}.{other_qid}: expected {repr(exp_val)}, got {repr(actual)}"
+                    )
+    if failing:
+        return False, f"Other question data corrupted: {failing}"
+    other_qids = list(prepopulate.keys())
+    return True, f"{other_qids} data unchanged in all {len(scenario['students'])} files"
+
+
 def check_decisions_updated(result_dir: str, scenario: dict) -> tuple:
     fixture_dir = scenario["_fixture_dir"]
     qid = scenario["question_id"]
