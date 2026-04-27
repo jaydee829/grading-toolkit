@@ -173,3 +173,36 @@ def test_correct_response_empty_comment_fails_when_nonempty(result_dir, scenario
     path.write_text(json.dumps(data))
     passed, detail = check_correct_response_empty_comment(str(result_dir), scenario)
     assert not passed
+
+
+from checker import check_comment_single_sentence, check_comment_ends_with_question
+
+
+def test_comment_single_sentence_passes(result_dir, scenario):
+    passed, detail = check_comment_single_sentence(str(result_dir), scenario)
+    assert passed
+
+
+def test_comment_single_sentence_fails_on_two_sentences(result_dir, scenario):
+    path = result_dir / "workspace" / "grades" / "222222_grades.json"
+    data = json.loads(path.read_text())
+    data["comments"]["Q1"] = "Is this right? Have you checked the notation?"
+    path.write_text(json.dumps(data))
+    passed, detail = check_comment_single_sentence(str(result_dir), scenario)
+    assert not passed
+    assert "222222" in detail
+
+
+def test_comment_ends_with_question_passes(result_dir, scenario):
+    passed, detail = check_comment_ends_with_question(str(result_dir), scenario)
+    assert passed
+
+
+def test_comment_ends_with_question_fails_on_statement(result_dir, scenario):
+    path = result_dir / "workspace" / "grades" / "444444_grades.json"
+    data = json.loads(path.read_text())
+    data["comments"]["Q1"] = "This hypothesis is reversed."
+    path.write_text(json.dumps(data))
+    passed, detail = check_comment_ends_with_question(str(result_dir), scenario)
+    assert not passed
+    assert "444444" in detail

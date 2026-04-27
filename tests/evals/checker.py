@@ -127,3 +127,38 @@ def check_correct_response_empty_comment(result_dir: str, scenario: dict) -> tup
     if failing:
         return False, f"Correct-response comments not empty: {failing}"
     return True, f"{', '.join(scenario['correct_students'])} comment is empty string"
+
+
+def check_comment_single_sentence(result_dir: str, scenario: dict) -> tuple:
+    grades_dir = os.path.join(result_dir, "workspace", "grades")
+    qid = scenario["question_id"]
+    failing = []
+    for sid in scenario["students"]:
+        path = os.path.join(grades_dir, f"{sid}_grades.json")
+        with open(path) as f:
+            data = json.load(f)
+        comment = data["comments"].get(qid, "")
+        if not comment:
+            continue
+        count = len(re.findall(r'[.?!]', comment))
+        if count != 1:
+            failing.append(f"{sid}: '{comment}' ({count} terminal marks)")
+    if failing:
+        return False, f"Multi-sentence or no-sentence comments: {failing}"
+    return True, "all non-empty comments: 1 sentence"
+
+
+def check_comment_ends_with_question(result_dir: str, scenario: dict) -> tuple:
+    grades_dir = os.path.join(result_dir, "workspace", "grades")
+    qid = scenario["question_id"]
+    failing = []
+    for sid in scenario["students"]:
+        path = os.path.join(grades_dir, f"{sid}_grades.json")
+        with open(path) as f:
+            data = json.load(f)
+        comment = data["comments"].get(qid, "")
+        if comment and not comment.rstrip().endswith("?"):
+            failing.append(sid)
+    if failing:
+        return False, f"Comments not ending with ?: {failing}"
+    return True, "all non-empty comments end with ?"
