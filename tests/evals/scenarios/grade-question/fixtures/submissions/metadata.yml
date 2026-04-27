@@ -1,0 +1,16 @@
+students:
+  - submission_id: "111111"
+    student_name: Alice Correct
+    pdf: 111111.pdf
+  - submission_id: "222222"
+    student_name: Bob Notation
+    pdf: 222222.pdf
+  - submission_id: "333333"
+    student_name: Carol Ambiguous
+    pdf: 333333.pdf
+  - submission_id: "444444"
+    student_name: Dave Reversed
+    pdf: 444444.pdf
+  - submission_id: "555555"
+    student_name: Eve Verbal
+    pdf: 555555.pdf
