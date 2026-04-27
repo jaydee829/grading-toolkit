@@ -77,3 +77,16 @@ def check_no_null_grades(result_dir: str, scenario: dict) -> tuple:
     if nulls:
         return False, f"Null values: {nulls}"
     return True, "all populated"
+
+
+def check_iterative_writes(result_dir: str, scenario: dict) -> tuple:
+    grades_dir = os.path.join(result_dir, "workspace", "grades")
+    threshold = scenario.get("iterative_write_threshold_seconds", 5)
+    mtimes = []
+    for sid in scenario["students"]:
+        path = os.path.join(grades_dir, f"{sid}_grades.json")
+        mtimes.append(os.path.getmtime(path))
+    spread = max(mtimes) - min(mtimes)
+    if spread <= threshold:
+        return False, f"spread {spread:.1f}s — batch write detected (threshold: {threshold}s)"
+    return True, f"spread {spread:.1f}s (threshold: {threshold}s)"

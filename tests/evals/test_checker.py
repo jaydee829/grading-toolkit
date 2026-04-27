@@ -105,3 +105,38 @@ def test_no_null_grades_fails_when_comment_is_null(result_dir, scenario):
     passed, detail = check_no_null_grades(str(result_dir), scenario)
     assert not passed
     assert "444444" in detail
+
+
+from checker import check_iterative_writes
+
+
+def test_iterative_writes_passes_with_spread(result_dir, scenario):
+    grades_dir = result_dir / "workspace" / "grades"
+    base = time.time()
+    for i, sid in enumerate(scenario["students"]):
+        path = grades_dir / f"{sid}_grades.json"
+        os.utime(path, (base + i * 10, base + i * 10))
+    passed, detail = check_iterative_writes(str(result_dir), scenario)
+    assert passed
+    assert "spread" in detail
+
+
+def test_iterative_writes_fails_on_batch_write(result_dir, scenario):
+    grades_dir = result_dir / "workspace" / "grades"
+    same_time = time.time()
+    for sid in scenario["students"]:
+        path = grades_dir / f"{sid}_grades.json"
+        os.utime(path, (same_time, same_time))
+    passed, detail = check_iterative_writes(str(result_dir), scenario)
+    assert not passed
+    assert "batch write detected" in detail
+
+
+def test_iterative_writes_uses_threshold_from_scenario(result_dir, scenario):
+    grades_dir = result_dir / "workspace" / "grades"
+    base = time.time()
+    for i, sid in enumerate(scenario["students"]):
+        path = grades_dir / f"{sid}_grades.json"
+        os.utime(path, (base + i * 0.6, base + i * 0.6))  # 2.4s spread < 5s threshold
+    passed, _ = check_iterative_writes(str(result_dir), scenario)
+    assert not passed
