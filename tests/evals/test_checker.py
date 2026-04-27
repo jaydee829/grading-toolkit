@@ -206,3 +206,33 @@ def test_comment_ends_with_question_fails_on_statement(result_dir, scenario):
     passed, detail = check_comment_ends_with_question(str(result_dir), scenario)
     assert not passed
     assert "444444" in detail
+
+
+from checker import check_comment_reuse_verbatim
+
+
+def test_comment_reuse_verbatim_passes(result_dir, scenario):
+    passed, detail = check_comment_reuse_verbatim(str(result_dir), scenario)
+    assert passed
+    assert "222222" in detail
+    assert "444444" in detail
+
+
+def test_comment_reuse_verbatim_fails_when_paraphrased(result_dir, scenario):
+    path = result_dir / "workspace" / "grades" / "222222_grades.json"
+    data = json.loads(path.read_text())
+    data["comments"]["Q1"] = "Have you used the correct symbol for the population mean?"
+    path.write_text(json.dumps(data))
+    passed, detail = check_comment_reuse_verbatim(str(result_dir), scenario)
+    assert not passed
+    assert "222222" in detail
+
+
+def test_comment_reuse_verbatim_fails_when_empty(result_dir, scenario):
+    path = result_dir / "workspace" / "grades" / "444444_grades.json"
+    data = json.loads(path.read_text())
+    data["comments"]["Q1"] = ""
+    path.write_text(json.dumps(data))
+    passed, detail = check_comment_reuse_verbatim(str(result_dir), scenario)
+    assert not passed
+    assert "444444" in detail

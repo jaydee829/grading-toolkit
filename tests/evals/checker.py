@@ -162,3 +162,27 @@ def check_comment_ends_with_question(result_dir: str, scenario: dict) -> tuple:
     if failing:
         return False, f"Comments not ending with ?: {failing}"
     return True, "all non-empty comments end with ?"
+
+
+def check_comment_reuse_verbatim(result_dir: str, scenario: dict) -> tuple:
+    fixture_dir = scenario["_fixture_dir"]
+    comments_map = _parse_comments_md(os.path.join(fixture_dir, "comments.md"))
+    qid = scenario["question_id"]
+    reuse_cases = scenario.get("reuse_cases", {})
+
+    grades_dir = os.path.join(result_dir, "workspace", "grades")
+    failing = []
+    for sid, category in reuse_cases.items():
+        expected = comments_map.get(qid, {}).get(category, [])
+        if not expected:
+            failing.append(f"{sid}: no fixture comment for category '{category}'")
+            continue
+        path = os.path.join(grades_dir, f"{sid}_grades.json")
+        with open(path) as f:
+            data = json.load(f)
+        actual = data["comments"].get(qid, "")
+        if actual not in expected:
+            failing.append(f"{sid}: '{actual}' not in fixture comments for '{category}'")
+    if failing:
+        return False, f"Verbatim reuse failed: {failing}"
+    return True, f"exact match for {list(reuse_cases.keys())}"
