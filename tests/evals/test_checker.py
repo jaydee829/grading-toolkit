@@ -45,3 +45,34 @@ def test_parse_comments_md_extracts_comments():
     assert result["Q1"]["Minor communication error"][0] == (
         "Are you using the right symbol to represent a population mean here?"
     )
+
+
+from checker import check_grade_files_exist, check_grade_schema_valid
+
+
+def test_grade_files_exist_passes(result_dir, scenario):
+    passed, detail = check_grade_files_exist(str(result_dir), scenario)
+    assert passed
+    assert "5/5" in detail
+
+
+def test_grade_files_exist_fails_when_file_missing(result_dir, scenario):
+    (result_dir / "workspace" / "grades" / "111111_grades.json").unlink()
+    passed, detail = check_grade_files_exist(str(result_dir), scenario)
+    assert not passed
+    assert "111111" in detail
+
+
+def test_grade_schema_valid_passes(result_dir, scenario):
+    passed, detail = check_grade_schema_valid(str(result_dir), scenario)
+    assert passed
+
+
+def test_grade_schema_valid_fails_when_key_missing(result_dir, scenario):
+    path = result_dir / "workspace" / "grades" / "222222_grades.json"
+    data = json.loads(path.read_text())
+    del data["flags"]
+    path.write_text(json.dumps(data))
+    passed, detail = check_grade_schema_valid(str(result_dir), scenario)
+    assert not passed
+    assert "222222" in detail

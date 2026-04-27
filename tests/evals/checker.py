@@ -34,3 +34,30 @@ def _parse_comments_md(comments_md_path: str) -> dict:
             comment = line[3:-1]
             result[current_q][current_cat].append(comment)
     return result
+
+
+def check_grade_files_exist(result_dir: str, scenario: dict) -> tuple:
+    grades_dir = os.path.join(result_dir, "workspace", "grades")
+    missing = [
+        sid for sid in scenario["students"]
+        if not os.path.exists(os.path.join(grades_dir, f"{sid}_grades.json"))
+    ]
+    if missing:
+        return False, f"Missing grade files: {missing}"
+    n = len(scenario["students"])
+    return True, f"{n}/{n} files created"
+
+
+def check_grade_schema_valid(result_dir: str, scenario: dict) -> tuple:
+    grades_dir = os.path.join(result_dir, "workspace", "grades")
+    required_keys = {"grades", "comments", "explanations", "flags"}
+    invalid = []
+    for sid in scenario["students"]:
+        path = os.path.join(grades_dir, f"{sid}_grades.json")
+        with open(path) as f:
+            data = json.load(f)
+        if not required_keys.issubset(data.keys()):
+            invalid.append(sid)
+    if invalid:
+        return False, f"Missing required keys in: {invalid}"
+    return True, f"all {len(scenario['students'])} valid"
