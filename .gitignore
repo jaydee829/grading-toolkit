@@ -5,3 +5,5 @@ __pycache__/
 *.pdf
 Thumbs.db
 .DS_Store
+tests/evals/results/*.json
+tests/evals/results/*.txt
