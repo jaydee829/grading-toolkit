@@ -140,3 +140,36 @@ def test_iterative_writes_uses_threshold_from_scenario(result_dir, scenario):
         os.utime(path, (base + i * 0.6, base + i * 0.6))  # 2.4s spread < 5s threshold
     passed, _ = check_iterative_writes(str(result_dir), scenario)
     assert not passed
+
+
+from checker import check_valid_rubric_categories, check_correct_response_empty_comment
+
+
+def test_valid_rubric_categories_passes(result_dir, scenario):
+    passed, detail = check_valid_rubric_categories(str(result_dir), scenario)
+    assert passed
+
+
+def test_valid_rubric_categories_fails_on_unknown_category(result_dir, scenario):
+    path = result_dir / "workspace" / "grades" / "555555_grades.json"
+    data = json.loads(path.read_text())
+    data["grades"]["Q1"] = "Completely Wrong"
+    path.write_text(json.dumps(data))
+    passed, detail = check_valid_rubric_categories(str(result_dir), scenario)
+    assert not passed
+    assert "555555" in detail
+
+
+def test_correct_response_empty_comment_passes(result_dir, scenario):
+    passed, detail = check_correct_response_empty_comment(str(result_dir), scenario)
+    assert passed
+    assert "111111" in detail
+
+
+def test_correct_response_empty_comment_fails_when_nonempty(result_dir, scenario):
+    path = result_dir / "workspace" / "grades" / "111111_grades.json"
+    data = json.loads(path.read_text())
+    data["comments"]["Q1"] = "Good job!"
+    path.write_text(json.dumps(data))
+    passed, detail = check_correct_response_empty_comment(str(result_dir), scenario)
+    assert not passed

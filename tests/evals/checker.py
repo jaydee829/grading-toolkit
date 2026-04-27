@@ -90,3 +90,40 @@ def check_iterative_writes(result_dir: str, scenario: dict) -> tuple:
     if spread <= threshold:
         return False, f"spread {spread:.1f}s — batch write detected (threshold: {threshold}s)"
     return True, f"spread {spread:.1f}s (threshold: {threshold}s)"
+
+
+def check_valid_rubric_categories(result_dir: str, scenario: dict) -> tuple:
+    fixture_dir = scenario["_fixture_dir"]
+    with open(os.path.join(fixture_dir, "rubric.md")) as f:
+        rubric_text = f.read()
+    valid = {line[2:].strip() for line in rubric_text.splitlines() if line.startswith("- ")}
+
+    grades_dir = os.path.join(result_dir, "workspace", "grades")
+    qid = scenario["question_id"]
+    invalid = []
+    for sid in scenario["students"]:
+        path = os.path.join(grades_dir, f"{sid}_grades.json")
+        with open(path) as f:
+            data = json.load(f)
+        grade = data["grades"].get(qid)
+        if grade is not None and grade not in valid:
+            invalid.append(f"{sid}: '{grade}'")
+    if invalid:
+        return False, f"Invalid categories: {invalid}"
+    return True, f"all {len(scenario['students'])} valid categories"
+
+
+def check_correct_response_empty_comment(result_dir: str, scenario: dict) -> tuple:
+    grades_dir = os.path.join(result_dir, "workspace", "grades")
+    qid = scenario["question_id"]
+    failing = []
+    for sid in scenario["correct_students"]:
+        path = os.path.join(grades_dir, f"{sid}_grades.json")
+        with open(path) as f:
+            data = json.load(f)
+        comment = data["comments"].get(qid)
+        if comment != "":
+            failing.append(f"{sid}: comment is {repr(comment)}")
+    if failing:
+        return False, f"Correct-response comments not empty: {failing}"
+    return True, f"{', '.join(scenario['correct_students'])} comment is empty string"
