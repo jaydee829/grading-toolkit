@@ -325,3 +325,28 @@ def test_run_all_assertions_result_has_pass_and_detail(result_dir, scenario):
     for name, result in results.items():
         assert "pass" in result, f"missing 'pass' in {name}"
         assert "detail" in result, f"missing 'detail' in {name}"
+
+
+def test_run_all_assertions_skips_interaction_required_in_unattended_mode(result_dir, scenario):
+    interaction_required = scenario.get("interaction_required_assertions", [])
+    assert interaction_required, "scenario must define interaction_required_assertions"
+    import time
+    grades_dir = result_dir / "workspace" / "grades"
+    base = time.time()
+    for i, sid in enumerate(scenario["students"]):
+        os.utime(grades_dir / f"{sid}_grades.json", (base + i * 10, base + i * 10))
+    results = run_all_assertions(str(result_dir), scenario, unattended=True)
+    for name in interaction_required:
+        assert results[name]["pass"] is None, f"{name} should be null in unattended mode"
+        assert "skipped" in results[name]["detail"]
+
+
+def test_run_all_assertions_runs_interaction_required_when_attended(result_dir, scenario):
+    import time
+    grades_dir = result_dir / "workspace" / "grades"
+    base = time.time()
+    for i, sid in enumerate(scenario["students"]):
+        os.utime(grades_dir / f"{sid}_grades.json", (base + i * 10, base + i * 10))
+    results = run_all_assertions(str(result_dir), scenario, unattended=False)
+    for name in scenario.get("interaction_required_assertions", []):
+        assert results[name]["pass"] is not None, f"{name} should run when unattended=False"

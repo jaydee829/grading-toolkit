@@ -290,10 +290,14 @@ ASSERTIONS = [
 ]
 
 
-def run_all_assertions(result_dir: str, scenario: dict) -> dict:
+def run_all_assertions(result_dir: str, scenario: dict, unattended: bool = True) -> dict:
+    interaction_required = set(scenario.get("interaction_required_assertions", []))
     results = {}
     for fn in ASSERTIONS:
         name = fn.__name__.replace("check_", "")
-        passed, detail = fn(result_dir, scenario)
-        results[name] = {"pass": passed, "detail": detail}
+        if unattended and name in interaction_required:
+            results[name] = {"pass": None, "detail": "skipped — interaction required in unattended mode"}
+        else:
+            passed, detail = fn(result_dir, scenario)
+            results[name] = {"pass": passed, "detail": detail}
     return results

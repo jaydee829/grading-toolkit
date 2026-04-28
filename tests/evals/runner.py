@@ -221,7 +221,7 @@ def main():
             f.write(output)
         print(f"[{label}] Completed in {duration:.1f}s. Log: {log_path}")
 
-        assertions = run_all_assertions(work_dir, scenario)
+        assertions = run_all_assertions(work_dir, scenario, unattended=True)
         passed = sum(1 for v in assertions.values() if v["pass"])
         total = len(assertions)
         print(f"[{label}] Structural: {passed}/{total} passed")

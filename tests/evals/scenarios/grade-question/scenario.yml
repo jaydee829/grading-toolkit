@@ -20,6 +20,10 @@ prepopulate:
     comments: ""
     explanations: "Correct."
 iterative_write_threshold_seconds: 5
+interaction_required_assertions:
+  - decisions_updated
+  - decisions_entry_format
+  - new_comment_in_comments_md
 structural_assertions:
   - grade_files_exist
   - no_null_grades
