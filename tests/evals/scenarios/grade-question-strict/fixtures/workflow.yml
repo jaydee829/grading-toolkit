@@ -1,0 +1,36 @@
+project:
+  name: Grade-Question Eval
+  course: Eval 101
+  instructor: Test Instructor
+  created_at: "2026-04-23"
+  profile: instructor_profile.md
+submissions:
+  directory: submissions/
+  metadata: submissions/metadata.yml
+  pdf_type: image_layer
+  pdf_renderer:
+    tool: pdftoppm
+    path: pdftoppm
+    dpi: 150
+    max_pages: 20
+python:
+  run_prefix: "python"
+questions:
+  - id: Q1
+    description: State null and alternative hypotheses for a two-sample t-test
+  - id: Q2
+    description: Identify the correct test statistic formula
+comment_strategy: strict
+output:
+  format: csv
+  csv_path: grades.csv
+  json_dir: workspace/grades/
+paths:
+  rubric: rubric.md
+  answer_key: answer_key.md
+  comments: comments.md
+  decisions: decisions.md
+  transcriptions: workspace/transcriptions/
+  grades: workspace/grades/
+  pages: workspace/pages/
+  scripts: scripts/

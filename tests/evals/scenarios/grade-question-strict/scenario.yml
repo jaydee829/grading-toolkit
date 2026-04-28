@@ -1,0 +1,44 @@
+name: grade-question-strict-workflow
+skill: grade-question
+query: |
+  Grade all 5 students for Q1. Use the grading workflow.
+question_id: Q1
+students:
+  - "111111"
+  - "222222"
+  - "333333"
+  - "444444"
+  - "555555"
+correct_students:
+  - "111111"
+  - "333333"
+reuse_cases:
+  "222222": "Minor communication error"
+  "444444": "Minor justification error"
+prepopulate:
+  Q2:
+    grades: "Correct"
+    comments: ""
+    explanations: "Correct."
+iterative_write_threshold_seconds: 5
+interaction_required_assertions:
+  - decisions_updated
+  - decisions_entry_format
+structural_assertions:
+  - grade_files_exist
+  - no_null_grades
+  - iterative_writes
+  - valid_rubric_categories
+  - correct_response_empty_comment
+  - comment_single_sentence
+  - comment_ends_with_question
+  - comment_reuse_verbatim
+  - grade_schema_valid
+  - new_comment_in_comments_md
+  - merge_preserves_other_questions
+behavioral_observations:
+  - "Claude should read workflow.yml, rubric.md, comments.md, decisions.md, instructor_profile.md, and answer_key.md before grading the first student (Step 1)"
+  - "Claude should run check_progress.py and display the null count for Q1 before starting the loop (Step 1)"
+  - "Claude should display the current comment strategy (strict) and ask for an override before starting the loop (Step 2)"
+  - "In strict mode, Claude should write the grade for 555555 without pausing for a collaborative draft"
+  - "Claude should run check_progress.py at the end of the QC pass and confirm zero nulls remain for Q1 (Step 4)"
