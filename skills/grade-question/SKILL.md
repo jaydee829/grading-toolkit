@@ -112,3 +112,7 @@ For each inconsistency:
   ```
 
 4. Run `check_progress.py` one final time. Confirm zero nulls remain for this question.
+
+5. Scan every student graded this session. For each whose comment for this question is an empty string and whose grade is not Correct or Blank:
+   - **Strict:** Generate an appropriate comment (phrased as a question, one sentence, not revealing the answer). Save it to `comments.md` under `## <QuestionID> / ### <category>`. Update the grade stub with the new comment and remove the flag entry.
+   - **Collaborative / Relaxed:** List the student, their grade, and the flag description. Ask: "These students need comments — should I draft one for each?" Wait for instructor input before writing.
