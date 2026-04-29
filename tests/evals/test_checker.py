@@ -301,6 +301,25 @@ def test_merge_preserves_other_questions_fails_when_q2_overwritten(result_dir, s
     assert "111111" in detail
 
 
+from checker import check_nonzero_grades_have_comments
+
+
+def test_nonzero_grades_have_comments_passes(result_dir, scenario):
+    passed, detail = check_nonzero_grades_have_comments(str(result_dir), scenario)
+    assert passed
+    assert "all non-correct" in detail
+
+
+def test_nonzero_grades_have_comments_fails_when_comment_empty(result_dir, scenario):
+    path = result_dir / "workspace" / "grades" / "222222_grades.json"
+    data = json.loads(path.read_text())
+    data["comments"]["Q1"] = ""
+    path.write_text(json.dumps(data))
+    passed, detail = check_nonzero_grades_have_comments(str(result_dir), scenario)
+    assert not passed
+    assert "222222" in detail
+
+
 from checker import run_all_assertions, ASSERTIONS
 
 

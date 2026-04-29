@@ -30,6 +30,7 @@ structural_assertions:
   - iterative_writes
   - valid_rubric_categories
   - correct_response_empty_comment
+  - nonzero_grades_have_comments
   - comment_single_sentence
   - comment_ends_with_question
   - comment_reuse_verbatim

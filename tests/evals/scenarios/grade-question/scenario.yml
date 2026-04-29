@@ -24,6 +24,7 @@ interaction_required_assertions:
   - decisions_updated
   - decisions_entry_format
   - new_comment_in_comments_md
+  - nonzero_grades_have_comments
 structural_assertions:
   - grade_files_exist
   - no_null_grades

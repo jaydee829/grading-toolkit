@@ -129,6 +129,24 @@ def check_correct_response_empty_comment(result_dir: str, scenario: dict) -> tup
     return True, f"{', '.join(scenario['correct_students'])} comment is empty string"
 
 
+def check_nonzero_grades_have_comments(result_dir: str, scenario: dict) -> tuple:
+    grades_dir = os.path.join(result_dir, "workspace", "grades")
+    qid = scenario["question_id"]
+    skip_grades = {"Correct", "Blank", None}
+    failing = []
+    for sid in scenario["students"]:
+        path = os.path.join(grades_dir, f"{sid}_grades.json")
+        with open(path) as f:
+            data = json.load(f)
+        grade = data["grades"].get(qid)
+        comment = data["comments"].get(qid, "")
+        if grade not in skip_grades and not comment:
+            failing.append(f"{sid}: grade='{grade}' but comment is empty")
+    if failing:
+        return False, f"Non-correct grades with empty comments: {failing}"
+    return True, "all non-correct grades have comments"
+
+
 def check_comment_single_sentence(result_dir: str, scenario: dict) -> tuple:
     grades_dir = os.path.join(result_dir, "workspace", "grades")
     qid = scenario["question_id"]
@@ -279,6 +297,7 @@ ASSERTIONS = [
     check_iterative_writes,
     check_valid_rubric_categories,
     check_correct_response_empty_comment,
+    check_nonzero_grades_have_comments,
     check_comment_single_sentence,
     check_comment_ends_with_question,
     check_comment_reuse_verbatim,
